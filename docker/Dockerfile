@@ -22,11 +22,11 @@ RUN mkdir -p /root/.ssh && \
 # Copy the current directory contents into the container at /llamaindex-project
 COPY . /llamaindex-project
 
-# Install Python dependencies using pip
-RUN pip install -e . --no-binary :all:
-
 # Set the working directory inside the container
 WORKDIR /llamaindex-project
+
+# Install Python dependencies using pip
+RUN pip install -e . --no-binary :all:
 
 # Specify the command to run on container startup
 CMD ["/bin/bash"]
