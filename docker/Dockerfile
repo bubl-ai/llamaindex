@@ -2,17 +2,22 @@
 FROM continuumio/anaconda3:latest
 
 # Install additional dependencies (git, vim)
-# Minimise the amount of data stored in that particular docker layer (rm -rf /var/lib/apt/lists/*)
+# Minimize the amount of data stored in that particular docker layer
 RUN apt-get update && \
     apt-get install -y git vim && \
-    rm -rf /var/lib/apt/lists/*  
+    rm -rf /var/lib/apt/lists/*
 
 # Create and activate a Conda environment
-RUN conda create --name myenv python=3.8 && \
+RUN conda create --name myenv python=3.11 && \
     echo "conda activate myenv" >> ~/.bashrc
 
 # Install numpy in the Conda environment
 RUN conda install -n myenv numpy
+
+# SSH for GitHub authentication
+# keyscan is used to avoid manually veryfying Github hosts
+RUN mkdir -p /root/.ssh && \
+    ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # Copy the current directory contents into the container at /llamaindex-project
 COPY . /llamaindex-project
