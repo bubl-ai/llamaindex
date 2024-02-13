@@ -1,4 +1,4 @@
-# Use an official myenv image with Python and Conda
+# Use an official base image with Python and Conda
 FROM continuumio/anaconda3:latest
 
 # Install additional dependencies (git, vim)
