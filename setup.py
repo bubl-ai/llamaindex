@@ -6,10 +6,10 @@ setup(
     author= 'Santiago Olivar',
     author_email='contact.bubl.ai@gmail.com',
     description='',
-    long_description=open('README.md').read(),  # Assuming you have a README.md file
+    long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/bubl-ai/llamaindex-project',
-    license='MIT',  # Choose an appropriate license for your package
+    license='MIT',
     classifiers=[
         'Development Status ::Planning',
         'Intended Audience :: Developers',
