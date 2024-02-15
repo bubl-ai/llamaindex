@@ -10,6 +10,7 @@ from llama_index.core import (
 PERSIST_DIR = "./storage"
 if not os.path.exists(PERSIST_DIR):
     # load the documents and create the index
+    # data includes .txt https://paulgraham.com/worked.html
     documents = SimpleDirectoryReader("../../data").load_data()
     index = VectorStoreIndex.from_documents(documents)
     # store it for later
