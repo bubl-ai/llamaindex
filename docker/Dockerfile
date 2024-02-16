@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y git vim && \
     rm -rf /var/lib/apt/lists/*
 
-# Installs with  Ccnda
+# Installs with  Conda
 RUN conda install numpy
 
 # Installs with pip
