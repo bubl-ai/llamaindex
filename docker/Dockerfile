@@ -11,7 +11,9 @@ RUN apt-get update && \
 RUN conda install numpy
 
 # Installs with pip
-RUN pip install llama-index
+RUN pip install \
+    llama-index \
+    openai
 
 # SSH for GitHub authentication
 # keyscan is used to avoid manually veryfying Github hosts
