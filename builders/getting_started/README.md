@@ -25,8 +25,6 @@ Key steps in RAG implementation:
 
 The beauty of RAG lies in its absence of training, ensuring it's always up-to-date by adding your data to the existing data accessible to LLMs. Another vital aspect is the ability to store your indexes, mainly accomplished through specialized databases known as vector stores. Finally a RAG framework must effectively perform proper evaluation on the accuracy of the responses.[LINK](https://docs.llamaindex.ai/en/stable/getting_started/concepts.html)
 
-![RAG](/images/RAG/basic_rag.png)_Source: LLamaIndex Documentation. RAG Diagram_
-
 ## LlamaIndex Tools
 
 - **Data Connectors**: Facilitate data ingestion.
