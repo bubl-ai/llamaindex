@@ -1,6 +1,6 @@
 from bubls.synthetic_data.family_tree import Person, Family
-from bubls.openai_assistants.biographer import biographer
-from bubls.openai_assistants.qa_generator import qa_generator
+from bubls.openai_assistants.biographer import Biographer
+from bubls.openai_assistants.qa_generator import QAGenerator
 from collections import OrderedDict
 import os
 
@@ -264,7 +264,7 @@ if __name__ == "__main__":
         first_relatives_info = (
             williams_family.first_degree_relatives_information(member)
         )
-        biography = biographer(
+        biography = Biographer(
             member_info, first_relatives_info
         ).generate_biography()
 
@@ -276,7 +276,7 @@ if __name__ == "__main__":
         with open(full_path, "w") as text_file:
             text_file.write(biography)
 
-        qa = qa_generator(biography, 20).generate_qa()
+        qa = QAGenerator(biography, 20).generate_qa()
         full_path = f"/llamaindex-project/data/williams_family/test_questions/{member}_qa.txt"
         directory = os.path.dirname(full_path)
         if not os.path.exists(directory):
