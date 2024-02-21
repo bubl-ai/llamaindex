@@ -1,6 +1,9 @@
 import openai as oa
 
-SYSTEM_CONTENT = "You are an assistant that uses the input text to generate questions and answers. The output must be in the format of a csv file with two columns: question, answer"
+SYSTEM_CONTENT = (
+    "You are an assistant that uses the input text to generate questions and "
+    "answers. The output must be in the format of a csv file with two columns: question, answer"
+)
 
 
 class QAGenerator:
@@ -26,10 +29,7 @@ class QAGenerator:
         """
         stream = self.cl.chat.completions.create(
             messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_CONTENT,
-                },
+                {"role": "system", "content": SYSTEM_CONTENT},
                 {
                     "role": "assistant",
                     "content": f"This is the input text {self.input_text}",
