@@ -1,4 +1,8 @@
 from bubls.synthetic_data.family_tree import Person, Family
+from bubls.openai_assistants.biographer import biographer
+from bubls.openai_assistants.qa_generator import qa_generator
+from collections import OrderedDict
+import os
 
 
 family_dict = {}
@@ -250,8 +254,32 @@ family_dict["Jeremy Williams"] = Person(
     alive=True,
 )
 
-new_family = Family(family_dict)
+williams_family = Family(OrderedDict(reversed(family_dict.items())))
+
 
 if __name__ == "__main__":
-    for person in family_dict:
-        print(person)
+    for member in williams_family.members:
+        print(f"Creating biography of {member}")
+        member_info = williams_family.person_information(member)
+        first_relatives_info = (
+            williams_family.first_degree_relatives_information(member)
+        )
+        biography = biographer(
+            member_info, first_relatives_info
+        ).generate_biography()
+
+        williams_family.members[member].extra_info = biography
+        full_path = f"/llamaindex-project/data/williams_family/biographies/{member}_bio.txt"
+        directory = os.path.dirname(full_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(full_path, "w") as text_file:
+            text_file.write(biography)
+
+        qa = qa_generator(biography, 20).generate_qa()
+        full_path = f"/llamaindex-project/data/williams_family/test_questions/{member}_qa.txt"
+        directory = os.path.dirname(full_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(full_path, "w") as text_file:
+            text_file.write(qa)
