@@ -4,12 +4,26 @@ SYSTEM_CONTENT = "You are an assistant that uses the input text to generate ques
 
 
 class QAGenerator:
-    def __init__(self, input_text: str, number_of_questions: int = 10):
+    def __init__(self, input_text: str, number_of_questions: int = 20):
+        """Initialize an assistant that generates questions and answers
+        in csv format for a given text. This is specially useful for testing
+        the performance of a RAGs.
+
+        Args:
+            input_text (str): Text that will be used to create the QA from.
+            number_of_questions (int, optional): How many QA tuples to create.
+                Defaults to 20.
+        """
         self.input_text = input_text
         self.number_of_questions = number_of_questions
         self.cl = oa.OpenAI()
 
-    def generate_qa(self):
+    def generate_qa(self) -> str:
+        """Use openai client to generate the QA.
+
+        Returns:
+            str: QA in csv format
+        """
         stream = self.cl.chat.completions.create(
             messages=[
                 {
