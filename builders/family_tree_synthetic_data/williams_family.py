@@ -255,7 +255,6 @@ williams_family = Family(OrderedDict(reversed(family_dict.items())))
 
 if __name__ == "__main__":
     for member in williams_family.members:
-        print(f"Creating biography of {member}")
 
         # Getting information
         member_info = williams_family.person_information(member)
@@ -264,6 +263,7 @@ if __name__ == "__main__":
         )
 
         # Call Biographer and save output
+        print(f"Creating biography of {member}")
         biography = Biographer(
             member_info, first_relatives_info
         ).generate_biography()
@@ -278,6 +278,7 @@ if __name__ == "__main__":
         williams_family.members[member].extra_info = biography
 
         # Call QAGenerator and save output
+        print(f"Creating QA of {member}")
         qa = QAGenerator(biography, 20).generate_qa()
         full_path = f"/llamaindex-project/data/williams_family/test_questions/{member}_qa.csv"
         directory = os.path.dirname(full_path)
