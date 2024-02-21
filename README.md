@@ -1,4 +1,5 @@
-# Welcome to bubl-ai: llamaindex-project
+# Welcome to bubl-ai:
+## llamaindex-project
 
 All [bubl-ai repositories](https://github.com/bubl-ai) will have the same structure:
 
