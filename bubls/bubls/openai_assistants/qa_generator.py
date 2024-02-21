@@ -1,7 +1,9 @@
 import openai as oa
 
+SYSTEM_CONTENT = "You are an assistant that uses the input text to generate questions and answers. The output must be in the format of a csv file with two columns: question, answer"
 
-class qa_generator:
+
+class QAGenerator:
     def __init__(self, input_text: str, number_of_questions: int = 10):
         self.input_text = input_text
         self.number_of_questions = number_of_questions
@@ -12,7 +14,7 @@ class qa_generator:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an assistant that uses the input text to generate questions and answers. The output must be in the format of a csv file with two columns: question, answer",
+                    "content": SYSTEM_CONTENT,
                 },
                 {
                     "role": "assistant",
