@@ -1,12 +1,12 @@
 import openai as oa
 
-SYSTEM_MESSAGE = (
+SYSTEM_CONTENT = (
     "You are writing the biography of a member using information of the "
     "individual and about its relatives. Share as much detail as possible "
     "about their profession, family and life in general."
 )
 
-USER_MESSAGE = (
+USER_CONTENT = (
     "Write a biography with at least 4000 tokens using the information "
     "provided about the individual and their first degree relatives"
 )
@@ -38,7 +38,7 @@ class Biographer:
         """
         stream = self.openai_client.chat.completions.create(
             messages=[
-                {"role": "system", "content": SYSTEM_MESSAGE},
+                {"role": "system", "content": SYSTEM_CONTENT},
                 {
                     "role": "assistant",
                     "content": f"This is the information of the individual you are writing the biography about. {self.person_info}",
@@ -47,7 +47,7 @@ class Biographer:
                     "role": "assistant",
                     "content": f"This is the information of the first degree relatives {self.first_degree_relatives_info}",
                 },
-                {"role": "user", "content": USER_MESSAGE},
+                {"role": "user", "content": USER_CONTENT},
             ],
             stream=True,
             top_p=0.9,
