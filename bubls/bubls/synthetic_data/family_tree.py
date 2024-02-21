@@ -16,7 +16,7 @@ class Person:
         spouse: str = None,
         alive: bool = True,
         death_date: str = None,
-        extra_info: str = None,
+        extra_info: str = "",
     ):
         """Initialize a Person object.
 
@@ -46,7 +46,7 @@ class Person:
         self.parents: List[str] = parents if parents is not None else []
         self.children: List[str] = children if children is not None else []
         self.married: bool = married
-        self.spouse: str = spouse
+        self.spouse: str = spouse if spouse is not None else ""
         self.alive: bool = alive
         self.death_date: str = death_date
         self.extra_info: str = extra_info
@@ -77,6 +77,7 @@ class Person:
             f"Married: {self.married}{married_info}, "
             f"Alive: {alive_status}{death_date_info}"
             f", Extra Info: {self.extra_info}"
+            "\n"
         )
 
 
@@ -132,4 +133,4 @@ class Family:
                 or name in member.spouse
             ):
                 info_relatives.append(member.__str__())
-        return ", ".join(info_relatives)
+        return "\n".join(info_relatives)
