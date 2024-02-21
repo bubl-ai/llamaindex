@@ -1,8 +1,14 @@
 from bubls.synthetic_data.family_tree import Person, Family
+from bubls.openai_assistants.biographer import Biographer
+from bubls.openai_assistants.qa_generator import QAGenerator
+from collections import OrderedDict
+import os
+import csv
 
-
+# Create a Family tree from dict of Persons
 family_dict = {}
 
+# 1st Generation
 family_dict["Immanuel Williams"] = Person(
     name="Immanuel Williams",
     birth_date="1940-Feb-1",
@@ -18,7 +24,6 @@ family_dict["Immanuel Williams"] = Person(
     alive=False,
     death_date="2005-Aug-17",
 )
-
 family_dict["Tessa Johnson"] = Person(
     name="Tessa Johnson",
     birth_date="1944-Jul-19",
@@ -34,6 +39,7 @@ family_dict["Tessa Johnson"] = Person(
     alive=True,
 )
 
+# 2nd Generation, 1st Family
 family_dict["Immanuel Williams II"] = Person(
     name="Immanuel Williams II",
     birth_date="1962-Mar-9",
@@ -53,7 +59,6 @@ family_dict["Immanuel Williams II"] = Person(
     spouse="Matilda Smith",
     alive=True,
 )
-
 family_dict["Matilda Smith"] = Person(
     name="Matilda Smith",
     birth_date="1961-Dec-1",
@@ -66,7 +71,6 @@ family_dict["Matilda Smith"] = Person(
     spouse="Immanuel Williams II",
     alive=True,
 )
-
 family_dict["Immanuel Williams III"] = Person(
     name="Immanuel Williams III",
     birth_date="1984-Jan-2",
@@ -77,7 +81,6 @@ family_dict["Immanuel Williams III"] = Person(
     ],
     alive=True,
 )
-
 family_dict["Raphael Williams"] = Person(
     name="Raphael Williams",
     birth_date="1987-Jan-20",
@@ -88,7 +91,6 @@ family_dict["Raphael Williams"] = Person(
     ],
     alive=True,
 )
-
 family_dict["Sora Williams"] = Person(
     name="Sora Williams",
     birth_date="1994-Mar-10",
@@ -100,6 +102,7 @@ family_dict["Sora Williams"] = Person(
     alive=True,
 )
 
+# 2nd Generation, 2nd Family
 family_dict["Viviana Williams"] = Person(
     name="Viviana Williams",
     birth_date="1963-Dec-11",
@@ -116,7 +119,6 @@ family_dict["Viviana Williams"] = Person(
     alive=False,
     death_date="2010-Nov-1",
 )
-
 family_dict["Lalit Wilson"] = Person(
     name="Lalit Wilson",
     birth_date="1960-Dec-21",
@@ -125,7 +127,6 @@ family_dict["Lalit Wilson"] = Person(
     spouse="Viviana Williams",
     alive=True,
 )
-
 family_dict["David Williams"] = Person(
     name="David Williams",
     birth_date="1988-May-24",
@@ -133,6 +134,7 @@ family_dict["David Williams"] = Person(
     alive=True,
 )
 
+# 2nd Generation, 3rd Family
 family_dict["Hannah Williams"] = Person(
     name="Hannah Williams",
     birth_date="1965-Feb-28",
@@ -152,7 +154,6 @@ family_dict["Hannah Williams"] = Person(
     spouse="Joseph Anderson",
     alive=True,
 )
-
 family_dict["Joseph Anderson"] = Person(
     name="Joseph Anderson",
     birth_date="1965-Feb-26",
@@ -165,7 +166,6 @@ family_dict["Joseph Anderson"] = Person(
     spouse="Hannah Williams",
     alive=True,
 )
-
 family_dict["Hannah Williams II"] = Person(
     name="Hannah Williams II",
     birth_date="1996-Jun-14",
@@ -177,7 +177,6 @@ family_dict["Hannah Williams II"] = Person(
     alive=False,
     death_date="2005-Oct-2",
 )
-
 family_dict["Thalia Williams"] = Person(
     name="Thalia Williams",
     birth_date="1998-Oct-27",
@@ -188,7 +187,6 @@ family_dict["Thalia Williams"] = Person(
     ],
     alive=True,
 )
-
 family_dict["Paulo Williams"] = Person(
     name="Paulo Williams",
     birth_date="2000-Jul-22",
@@ -200,6 +198,7 @@ family_dict["Paulo Williams"] = Person(
     alive=True,
 )
 
+# 2nd Generation, 4th Family
 family_dict["Edward Williams"] = Person(
     name="Edward Williams",
     birth_date="1967-Apr-21",
@@ -217,7 +216,6 @@ family_dict["Edward Williams"] = Person(
     spouse="Lizbeth Miller",
     alive=True,
 )
-
 family_dict["Lizbeth Miller"] = Person(
     name="Lizbeth Miller",
     birth_date="1966-Aug-11",
@@ -228,7 +226,6 @@ family_dict["Lizbeth Miller"] = Person(
     spouse="Edward Williams",
     alive=True,
 )
-
 family_dict["Marianne Williams"] = Person(
     name="Marianne Williams",
     birth_date="2002-Feb-2",
@@ -236,6 +233,7 @@ family_dict["Marianne Williams"] = Person(
     alive=True,
 )
 
+# 2nd Generation, 4th Family
 family_dict["Jeremy Williams"] = Person(
     name="Jeremy Williams",
     birth_date="1970-Sep-16",
@@ -250,8 +248,45 @@ family_dict["Jeremy Williams"] = Person(
     alive=True,
 )
 
-new_family = Family(family_dict)
+# Init a Family object with all the Persons
+# Reverse is for creating biographies from bottom to top
+williams_family = Family(OrderedDict(reversed(family_dict.items())))
+
 
 if __name__ == "__main__":
-    for person in family_dict:
-        print(person)
+    for member in williams_family.members:
+
+        # Getting information
+        member_info = williams_family.person_information(member)
+        first_relatives_info = (
+            williams_family.first_degree_relatives_information(member)
+        )
+
+        # Call Biographer and save output
+        print(f"Creating biography of {member}")
+        biography = Biographer(
+            member_info, first_relatives_info
+        ).generate_biography()
+        full_path = f"/llamaindex-project/data/williams_family/biographies/{member}_bio.txt"
+        directory = os.path.dirname(full_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(full_path, "w") as text_file:
+            text_file.write(biography)
+
+        # Ppreviously generated biographies will be shared on next biographies
+        williams_family.members[member].extra_info = biography
+
+        # Call QAGenerator and save output
+        print(f"Creating QA of {member}")
+        qa = QAGenerator(biography, 20).generate_qa()
+        full_path = f"/llamaindex-project/data/williams_family/test_questions/{member}_qa.csv"
+        directory = os.path.dirname(full_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(full_path, mode="w", newline="") as csv_file:
+            csv_writer = csv.writer(csv_file)
+
+            # Split the string by lines and write each line as a row in the CSV file
+            for line in qa.split("\n"):
+                csv_writer.writerow(line.split(","))
