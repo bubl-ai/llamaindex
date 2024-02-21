@@ -5,11 +5,26 @@ class biographer:
     def __init__(
         self, person_info: str, first_degree_relatives_info: str = None
     ):
+        """Initialize an assistant that generates the biography of
+        a person using the information provided. the biography is mainly
+        focused on the family tree structure of the individual.
+
+        Args:
+            person_info (str): Information of the individual the biography
+                is written about.
+            first_degree_relatives_info (str, optional): Information about
+                all the first degree relatives. Defaults to None.
+        """
         self.person_info = person_info
         self.first_degree_relatives_info = first_degree_relatives_info
         self.cl = oa.OpenAI()
 
-    def generate_biography(self):
+    def generate_biography(self) -> str:
+        """Use openai client to generate a biography.
+
+        Returns:
+            str: biography
+        """
         stream = self.cl.chat.completions.create(
             messages=[
                 {
