@@ -12,8 +12,11 @@ RUN conda install numpy
 
 # Installs with pip
 RUN pip install \
+    transformers \
     llama-index \
-    openai
+    llama-index-embeddings-huggingface \
+    openai \
+    chromadb
 
 # SSH for GitHub authentication
 # keyscan is used to avoid manually veryfying Github hosts
@@ -25,6 +28,7 @@ COPY . /llamaindex-project
 
 # Set the working directory inside the container
 WORKDIR /llamaindex-project
+ENV WORKDIR=/llamaindex-project
 
 # Install Python dependencies using pip
 RUN pip install -e . --no-binary :all:
