@@ -1,4 +1,5 @@
-import openai as oa
+from llama_index.core.llms import ChatMessage
+from llama_index.llms.openai import OpenAI
 
 SYSTEM_CONTENT = (
     "You are an assistant that uses the input text to generate questions and "
@@ -19,7 +20,7 @@ class QAGenerator:
         """
         self.input_text = input_text
         self.number_of_questions = number_of_questions
-        self.cl = oa.OpenAI()
+        self.llm = OpenAI(model="gpt-3.5-turbo", top_p=0.9)
 
     def generate_qa(self) -> str:
         """Use openai client to generate the QA.
@@ -27,26 +28,18 @@ class QAGenerator:
         Returns:
             str: QA in csv format
         """
-        stream = self.cl.chat.completions.create(
-            messages=[
-                {"role": "system", "content": SYSTEM_CONTENT},
-                {
-                    "role": "assistant",
-                    "content": f"This is the input text {self.input_text}",
-                },
-                {
-                    "role": "user",
-                    "content": f"Generate a total of {self.number_of_questions} questions and answers",
-                },
-            ],
-            stream=True,
-            top_p=0.9,
-            model="gpt-3.5-turbo",
-        )
+        chat_history = [
+            ChatMessage(role="system", content=SYSTEM_CONTENT),
+            ChatMessage(
+                role="assistant",
+                content=f"This is the input text {self.input_text}",
+            ),
+            ChatMessage(
+                role="user",
+                content=f"Generate a total of {self.number_of_questions} questions and answers",
+            ),
+        ]
 
-        response = ""
-        for chunk in stream:
-            if chunk.choices[0].delta.content is not None:
-                response += chunk.choices[0].delta.content
+        response = self.llm.chat(chat_history)
 
-        return response
+        return response.message.content

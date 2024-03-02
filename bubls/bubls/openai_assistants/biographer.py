@@ -1,4 +1,5 @@
-import openai as oa
+from llama_index.core.llms import ChatMessage
+from llama_index.llms.openai import OpenAI
 
 SYSTEM_CONTENT = (
     "You are writing the biography of a member using information of the "
@@ -28,7 +29,7 @@ class Biographer:
         """
         self.person_info = person_info
         self.first_degree_relatives_info = first_degree_relatives_info
-        self.openai_client = oa.OpenAI()
+        self.llm = OpenAI(model="gpt-3.5-turbo", top_p=0.9)
 
     def generate_biography(self) -> str:
         """Use openai client to generate a biography.
@@ -36,27 +37,19 @@ class Biographer:
         Returns:
             str: biography
         """
-        stream = self.openai_client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": SYSTEM_CONTENT},
-                {
-                    "role": "assistant",
-                    "content": f"This is the information of the individual you are writing the biography about. {self.person_info}",
-                },
-                {
-                    "role": "assistant",
-                    "content": f"This is the information of the first degree relatives {self.first_degree_relatives_info}",
-                },
-                {"role": "user", "content": USER_CONTENT},
-            ],
-            stream=True,
-            top_p=0.9,
-            model="gpt-3.5-turbo",
-        )
+        chat_history = [
+            ChatMessage(role="system", content=SYSTEM_CONTENT),
+            ChatMessage(
+                role="assistant",
+                content=f"This is the information of the individual you are writing the biography about. {self.person_info}",
+            ),
+            ChatMessage(
+                role="assistant",
+                content=f"This is the information of the first degree relatives {self.first_degree_relatives_info}",
+            ),
+            ChatMessage(role="user", content=USER_CONTENT),
+        ]
 
-        response = ""
-        for chunk in stream:
-            if chunk.choices[0].delta.content is not None:
-                response += chunk.choices[0].delta.content
+        response = self.llm.chat(chat_history)
 
-        return response
+        return response.message.content
