@@ -5,7 +5,7 @@ The examples will be published as a [series of Python notebooks](https://github.
 - **Loading Data:** Processing and ingesting data.
 - **Indexing:** Creating data structures for LLM querying.
 - **Querying:** Making prompt calls to an LLM.
-- **Evaluation of RAG**: To improve you have to continuously be benchmarking and measuring the performance of your solutions.
+- **Evaluation**: To improve you have to continuously be benchmarking and measuring the performance of your solutions.
 
 These examples draw inspiration from the [LlamaIndex Bottoms-Up Development video series](https://docs.llamaindex.ai/en/stable/getting_started/discover_llamaindex.html).
 
