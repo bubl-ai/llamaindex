@@ -1,0 +1,8 @@
+These examples were inspired from the [LlamaIndex Bottoms-Up Development video series](https://docs.llamaindex.ai/en/stable/getting_started/discover_llamaindex.html).
+
+The objective of the examples in this folder is to use the bubl-ai environment ([container](https://github.com/bubl-ai/llamaindex-project/tree/main/docker) + [library](https://github.com/bubl-ai/llamaindex-project/tree/main/bubls/bubls)) to experiment with ideas and learn [llama-index](https://docs.llamaindex.ai/en/stable/) at the same time.
+
+The synthetic dataset used in these examples is the **Williams Family Tree**
+- [bubl-ai post describing the dataset](https://bubl-ai.com/posts/Data-for-evaluating-different-RAGs/)
+- [Code that creates the dataset](https://github.com/bubl-ai/llamaindex-project/blob/main/builders/family_tree_synthetic_data/williams_family.py)
+- [Available in our Hugging Face site](https://huggingface.co/datasets/bubl-ai/williams_family_tree)
