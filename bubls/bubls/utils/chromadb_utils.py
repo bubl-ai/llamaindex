@@ -31,9 +31,11 @@ class ConfigurableChromaIndex:
         storage_context = StorageContext.from_defaults(
             vector_store=vector_store
         )
+
+        # Create Index
         self.index = VectorStoreIndex.from_documents(
             documents,
-            storage_context=storage_context,  # , embed_model=embed_model
+            storage_context=storage_context,
         )
 
 
