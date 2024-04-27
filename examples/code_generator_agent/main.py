@@ -1,6 +1,6 @@
 from bubls.utils.data.download import download_folder_from_repo
 from bubls.utils.indexing import create_index_from_path
-from bubls.utils.agents.function_tools import read_code_tool
+from bubls.utils.agents.general_function_tools import read_code_tool
 from llama_index.llms.openai import OpenAI
 from llama_parse import LlamaParse
 from llama_index.core import PromptTemplate
