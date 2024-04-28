@@ -24,3 +24,27 @@ read_code_tool = FunctionTool.from_defaults(
     name="read_code",
     description="This tool can read the contents of code file.",
 )
+
+
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers and returns the result integer"""
+    return a * b
+
+
+multiply_tool = FunctionTool.from_defaults(fn=multiply)
+
+
+def add(a: int, b: int) -> int:
+    """Add two integers and returns the result integer"""
+    return a + b
+
+
+add_tool = FunctionTool.from_defaults(fn=add)
+
+
+def subtract(a: int, b: int) -> int:
+    """Subtract two integers and returns the result integer"""
+    return a - b
+
+
+subtract_tool = FunctionTool.from_defaults(fn=subtract)
