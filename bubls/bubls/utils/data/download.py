@@ -1,5 +1,6 @@
 import os
 from git import Repo
+import subprocess
 
 
 def download_folder_from_repo(
@@ -39,3 +40,16 @@ def download_folder_from_repo(
     os.system(f"rm -r {repo_dst_path}")
 
     return destination_path
+
+
+def download_file_from_url(
+    source_url: str, file_name: str, save_data_to: str
+) -> dict:
+    if not os.path.exists(save_data_to):
+        os.mkdir(save_data_to)
+    file_full_path = os.path.join(save_data_to, file_name)
+    if not os.path.exists(file_full_path):
+        command = f"wget '{source_url}' -O '{file_full_path}'"
+        subprocess.run(command, shell=True)
+
+    return {"download_status": "Completed", "path": file_full_path}
