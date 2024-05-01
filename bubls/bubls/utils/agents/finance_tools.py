@@ -4,6 +4,7 @@
 
 from llama_index.core.tools.tool_spec.base import BaseToolSpec
 from llama_index.llms.openai import OpenAI
+from llama_index.core.readers.base import Document
 from newsapi.newsapi_client import NewsApiClient
 import yfinance as yf
 import pandas as pd
@@ -123,7 +124,8 @@ class FinanceTools(BaseToolSpec):
             for a, article in enumerate(articles["articles"])
         ]
 
-        return ".\n".join(news_concat)
+        # This may be a large response so storing it a indices
+        return [Document(text=".\n".join(news_concat))]
 
     def summarize_news(
         self,
