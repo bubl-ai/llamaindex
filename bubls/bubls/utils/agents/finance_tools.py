@@ -10,6 +10,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import date, datetime
+from typing import Optional
 
 
 LLM = OpenAI("gpt-4")
@@ -40,12 +41,14 @@ class FinanceTools(BaseToolSpec):
         """
         self.news_api_client = news_api_client
 
-    def stock_prices(self, ticker: str, period_days: int) -> pd.DataFrame:
+    def stock_prices(
+        self, ticker: str, period_days: Optional[int] = 1
+    ) -> pd.DataFrame:
         """Retrieves stock information for the given period of days.
 
         Args:
             ticker (str): The stock ticker.
-            period_days (int): Period of days to retrieve
+            period_days (int, optional): Period of days to retrieve. Defaults to 1.
 
         Returns:
             pd.DataFrame: DataFrame containing stock's prices.
@@ -55,14 +58,17 @@ class FinanceTools(BaseToolSpec):
         return df
 
     def plot_stock_price(
-        self, ticker: str, period_days: int, info_names: list = ["Close"]
+        self,
+        ticker: str,
+        period_days: int,
+        info_names: Optional[list] = ["Close"],
     ) -> bool:
         """Plots selected stock data for the last month for a given ticker.
 
         Args:
             ticker (str): The stock ticker.
             period_days (int): Period of days to plot
-            info_names (list, optional): List of columns to plot. Defaults to ["Close", "Volume"].
+            info_names (list, optional): List of columns to plot. Defaults to ["Close"].
 
         Returns:
             bool: Bool telling if function succeeded or not.
@@ -80,15 +86,16 @@ class FinanceTools(BaseToolSpec):
     def search_news(
         self,
         ticker: str,
-        num_articles: int = 3,
-        from_date: str = str(date.today()),
-        to_date: str = str(date.today()),
+        num_articles: Optional[int] = 3,
+        from_date: Optional[str] = str(date.today()),
+        to_date: Optional[str] = str(date.today()),
     ) -> str:
         """Searches for recent news articles related to a given stock ticker.
 
         Args:
             ticker (str): The stock ticker.
-            num_articles (int, optional): Number of news articles to retrieve. Defaults to 5.
+            num_articles (int, optional): Number of news articles to retrieve.
+                Defaults to 3.
             from_date (str, optional): Start date (format: %Y-%m-%d) of news articles.
                 Defaults to today's date.
             to_date (str, optional): End date (format: %Y-%m-%d) of news articles.
@@ -121,15 +128,16 @@ class FinanceTools(BaseToolSpec):
     def summarize_news(
         self,
         ticker: str,
-        num_articles: int = 3,
-        from_date: str = str(date.today()),
-        to_date: str = str(date.today()),
+        num_articles: Optional[int] = 3,
+        from_date: Optional[str] = str(date.today()),
+        to_date: Optional[str] = str(date.today()),
     ) -> str:
         """Generates a summary for the latest news related to a specific ticker.
 
         Args:
             ticker (str): The stock ticker.
-            num_articles (int, optional): Number of news articles to retrieve. Defaults to 5.
+            num_articles (int, optional): Number of news articles to retrieve.
+                Defaults to 3.
             from_date (str, optional): Start date (format: %Y-%m-%d) of news articles.
                 Defaults to today's date.
             to_date (str, optional): End date (format: %Y-%m-%d) of news articles.
