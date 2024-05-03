@@ -44,7 +44,17 @@ def download_folder_from_repo(
 
 def download_file_from_url(
     source_url: str, file_name: str, save_data_to: str
-) -> dict:
+) -> str:
+    """Uses the provided url to download a file.
+
+    Args:
+        source_url (str): URL of the file.
+        file_name (str): Name that will be used to save the file.
+        save_data_to (str): Destination path of file.
+
+    Returns:
+        str: Full path of the created file.
+    """
     if not os.path.exists(save_data_to):
         os.mkdir(save_data_to)
     file_full_path = os.path.join(save_data_to, file_name)
@@ -52,4 +62,4 @@ def download_file_from_url(
         command = f"wget '{source_url}' -O '{file_full_path}'"
         subprocess.run(command, shell=True)
 
-    return {"download_status": "Completed", "path": file_full_path}
+    return file_full_path
