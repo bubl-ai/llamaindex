@@ -8,6 +8,7 @@ from typing import List
 from sentence_transformers.evaluation import InformationRetrievalEvaluator
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
+import pandas as pd
 
 
 def get_query_hit_pairs(
@@ -15,7 +16,7 @@ def get_query_hit_pairs(
     embed_model,
     top_k: int = 5,
     verbose: bool = False,
-) -> List[dict]:
+) -> pd.DataFrame:
     """Dataset contains
     - queries
     - relevant node for each query
@@ -33,7 +34,7 @@ def get_query_hit_pairs(
         verbose (bool, optional): Show progress. Defaults to False.
 
     Returns:
-        List[dict]: Each element has information of a query and if
+        pd.DataFrame: Each row has information of a query and if
             it was a hit or not
     """
     corpus = dataset.corpus
@@ -60,7 +61,7 @@ def get_query_hit_pairs(
             "query": query_id,
         }
         eval_results.append(eval_result)
-    return eval_results
+    return pd.DataFrame(eval_results)
 
 
 def sentence_transformer_ir_evaluator(
