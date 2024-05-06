@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 
-def get_query_hit_pairs(
+def evaluate_embed_model(
     dataset: EmbeddingQAFinetuneDataset,
     embed_model,
     top_k: int = 5,
@@ -52,10 +52,19 @@ def get_query_hit_pairs(
         retrieved_nodes = retriever.retrieve(query)
         retrieved_ids = [node.node.node_id for node in retrieved_nodes]
         expected_id = relevant_docs[query_id][0]
-        is_hit = expected_id in retrieved_ids
+
+        rank = None
+        for idx, id in enumerate(retrieved_ids):
+            if id == expected_id:
+                rank = idx + 1
+                break
+
+        is_hit = rank is not None  # assume 1 relevant doc
+        mrr = 0 if rank is None else 1 / rank
 
         eval_result = {
             "is_hit": is_hit,
+            "mrr": mrr,
             "retrieved": retrieved_ids,
             "expected": expected_id,
             "query": query_id,
