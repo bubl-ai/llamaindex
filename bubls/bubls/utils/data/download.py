@@ -35,7 +35,7 @@ def download_folder_from_repo(
     # Copy the contents of the folder to the destination path
     destination_path = os.path.join(os.environ["DATA_DIR"], repo_name)
     if not os.path.exists(destination_path):
-        os.mkdir(destination_path)
+        os.makedirs(destination_path)
     os.system(f"cp -r {repo_folder_path}/* {destination_path}")
     os.system(f"rm -r {repo_dst_path}")
 
@@ -56,10 +56,23 @@ def download_file_from_url(
         str: Full path of the created file.
     """
     if not os.path.exists(save_data_to):
-        os.mkdir(save_data_to)
+        os.makedirs(save_data_to)
     file_full_path = os.path.join(save_data_to, file_name)
     if not os.path.exists(file_full_path):
+        print(
+            f"""
+            Downloading file {file_name} from {source_url}.
+            Saving to {save_data_to}
+            """
+        )
         command = f"wget '{source_url}' -O '{file_full_path}'"
         subprocess.run(command, shell=True)
+    else:
+        print(
+            f"""
+            Skipping downloading as file {file_name} from {source_url}.
+            already exists on {save_data_to}
+            """
+        )
 
     return file_full_path
