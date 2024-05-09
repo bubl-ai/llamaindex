@@ -29,8 +29,12 @@ class RAGBuilder:
         self.llm_eval_data = {}
         self.nodes = {}
         self.qa_pairs = {}
+        self.index = {}
+        self.query_engine = {}
+        self.retriever = {}
+        self.chat_engine = {}
 
-    def ingest_data(self, c_id: str):
+    def _ingest_data(self, c_id: str):
         component_cfg = self.components_cfg[c_id]
 
         # Nodes is the main output, check if exists
@@ -170,10 +174,105 @@ class RAGBuilder:
         data_path = os.path.join(persist_dir, "qa_pairs.json")
         self.qa_pairs[c_id] = EmbeddingQAFinetuneDataset.from_json(data_path)
 
+    def _set_engines(self, c_id: str):
+        component_cfg = self.components_cfg[c_id]
+
+        # Index is the main output, check if exists
+        index_data_path = os.path.join(
+            os.environ["PERSIST_DIR"], c_id, "index"
+        )
+        if not os.path.exists(index_data_path):
+            print(f"Generating engines for {c_id}")
+            self._gen_index(c_id, component_cfg.get("load_data", {}))
+
+        else:
+            print(f"Loading engines for {c_id}")
+            self._get_index(c_id)
+
+        self._gen_query_engine(c_id, component_cfg.get("gen_query_engine", {}))
+        self._gen_retriever(c_id, component_cfg.get("gen_retriever", {}))
+        self._gen_chat_engine(c_id, component_cfg.get("gen_chat_engine", {}))
+
+    def _gen_index(self, c_id: str, cfg: Dict[str, Any]):
+        print(f"Generating Index for {c_id}")
+        persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "index")
+        os.makedirs(persist_dir, exist_ok=True)
+
+        ## From documents
+        # self.index[c] = VectorStoreIndex.from_documents(
+        #     documents=self.documents[c],
+        #     **cfg,
+        #     # service_context,  # Deprecated, use Settings
+        #     # storage_context,
+        #     # callback_manager,
+        #     # transformations,
+        # )
+
+        ## From vector stores as storage_context
+        # db = chromadb.PersistentClient(
+        #     path=os.path.join(os.environ["WORKDIR"], "chroma_db")
+        # )
+        # chroma_collection = db.get_or_create_collection(name_collection)
+        # vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        ## or
+        # vector_store = PineconeVectorStore(pinecone.Index("quickstart"))
+        # storage_context = StorageContext.from_defaults(
+        #     vector_store=vector_store
+        # )
+        # self.index[c] = VectorStoreIndex.from_vector_store(
+        #     vector_store=vector_store
+        # )
+
+        ## From nodes
+        self.index[c_id] = VectorStoreIndex(
+            self.nodes[c_id],
+        )
+
+        ## Persist index to avoid constructing it again
+        self.index[c_id].storage_context.persist(persist_dir)
+
+    def _get_index(self, c_id: str):
+        print(f"Loading Index for {c_id}")
+        persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "index")
+        storage_context = StorageContext.from_defaults(persist_dir=persist_dir)
+        self.index[c_id] = load_index_from_storage(storage_context)
+
+    def _gen_query_engine(self, c_id: str, cfg: Dict[str, Any]):
+        print(f"Generating Query Engine for {c_id}")
+        self.query_engine[c_id] = self.index[c_id].as_query_engine(
+            similarity_top_k=cfg.get("similarity_top_k", 3)
+        )
+
+    def _gen_retriever(self, c_id: str, cfg: Dict[str, Any]):
+        print(f"Generating Retriever for {c_id}")
+        self.retriever[c_id] = self.index[c_id].as_retriever(
+            similarity_top_k=cfg.get("similarity_top_k", 3),
+            ## You can set here  parameters for vector store and alpha
+            # https://docs.llamaindex.ai/en/stable/api_reference/retrievers/vector/
+        )
+
+    def _gen_chat_engine(self, c_id: str, cfg: Dict[str, Any]):
+        print(f"Generating Retriever for {c_id}")
+        CHAT_SYSTEM_CONTENT = """
+            Here are the relevant documents for the context:
+            {context_str}
+            ----
+            Given the context information and not prior knowledge,
+            answer to the question, as briefly as possible.
+            Structure your response as a list of facts.
+        """
+        memory = ChatMemoryBuffer.from_defaults(token_limit=3900)
+
+        self.chat_engine[c_id] = self.index[c_id].as_chat_engine(
+            similarity_top_k=cfg.get("similarity_top_k", 3),
+            chat_mode="condense_plus_context",
+            memory=memory,
+            # llm=llm,
+            context_prompt=CHAT_SYSTEM_CONTENT,
+            verbose=False,
+        )
+
     def build(self):
         for c_id, component_cfg in self.components_cfg.items():
-            self.ingest_data(c_id)
-            # self._set_index(c)
-            # self._set_query_engine(c)
-            # self._set_retriever(c)
-            # self._set_chat_engine(c)
+            self._ingest_data(c_id)
+            self._set_engines(c_id)

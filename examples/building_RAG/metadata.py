@@ -38,6 +38,10 @@ lyft_10k = {
         "nodes_pct_sample": 0.3,
         "num_questions_per_chunk": 2,
     },
+    "gen_index": {},
+    "gen_query_engine": {"similarity_top_k": 5},
+    "gen_retriever": {},
+    "gen_chat_engine": {},
 }
 
 papers_ridesharing = {
@@ -67,6 +71,10 @@ papers_ridesharing = {
         "nodes_pct_sample": 0.2,
         "num_questions_per_chunk": 1,
     },
+    "gen_index": {},
+    "gen_query_engine": {"similarity_top_k": 5},
+    "gen_retriever": {},
+    "gen_chat_engine": {},
 }
 
 wiki_public_companies = {
@@ -91,4 +99,8 @@ wiki_public_companies = {
         "nodes_pct_sample": 0.5,
         "num_questions_per_chunk": 2,
     },
+    "gen_index": {},
+    "gen_query_engine": {"similarity_top_k": 5},
+    "gen_retriever": {},
+    "gen_chat_engine": {},
 }
