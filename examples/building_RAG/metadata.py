@@ -7,6 +7,20 @@ from llama_index.core.extractors import (
     KeywordExtractor,
 )
 
+# from llama_index.core.postprocessor import TimeWeightedPostprocessor
+# from llama_index.core.postprocessor import SimilarityPostprocessor
+# from llama_index.core.postprocessor import KeywordNodePostprocessor
+# from llama_index.core.postprocessor import MetadataReplacementPostProcessor
+# from llama_index.core.postprocessor import LongContextReorder
+# from llama_index.core.postprocessor import SentenceEmbeddingOptimizer
+# from llama_index.postprocessor.cohere_rerank import CohereRerank
+# from llama_index.core.postprocessor import SentenceTransformerRerank
+# from llama_index.core.postprocessor import LLMRerank
+# from llama_index.postprocessor.jinaai_rerank import JinaRerank
+# from llama_index.core.postprocessor import FixedRecencyPostprocessor
+# from llama_index.core.postprocessor import EmbeddingRecencyPostprocessor
+# from llama_index.core.postprocessor import TimeWeightedPostprocessor
+
 lyft_10k = {
     "download_data": {
         "source_urls": [
@@ -39,9 +53,15 @@ lyft_10k = {
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
-    "gen_query_engine": {"similarity_top_k": 5},
-    "gen_retriever": {},
-    "gen_chat_engine": {},
+    # "gen_retriever": {},
+    # "gen_query_engine": {
+    #     "similarity_top_k": 1,
+    #     "node_postprocessors": [
+    #         TimeWeightedPostprocessor(
+    #             time_decay=0.5, time_access_refresh=False, top_k=1
+    #         )
+    #     ],
+    # },
 }
 
 papers_ridesharing = {
@@ -72,9 +92,8 @@ papers_ridesharing = {
         "num_questions_per_chunk": 1,
     },
     "gen_index": {},
-    "gen_query_engine": {"similarity_top_k": 5},
-    "gen_retriever": {},
-    "gen_chat_engine": {},
+    # "gen_retriever": {},
+    # "gen_query_engine": {"similarity_top_k": 1},
 }
 
 wiki_public_companies = {
@@ -100,7 +119,6 @@ wiki_public_companies = {
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
-    "gen_query_engine": {"similarity_top_k": 5},
-    "gen_retriever": {},
-    "gen_chat_engine": {},
+    # "gen_retriever": {},
+    # "gen_query_engine": {"similarity_top_k": 1},
 }
