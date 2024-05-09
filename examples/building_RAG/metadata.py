@@ -88,7 +88,7 @@ wiki_public_companies = {
     },
     "gen_nodes": {},
     "gen_qa_pairs": {
-        "pct_sample": 0.5,
+        "nodes_pct_sample": 0.5,
         "num_questions_per_chunk": 2,
     },
 }
