@@ -119,14 +119,13 @@ wiki_public_companies = {
         ],
     },
     "gen_llm_eval_data": {
-        "docs_pct_split": [0.2, 0.1, 0.1],
+        "docs_pct_split": [0.5, 0.25, 0.25],
         "num_questions_per_chunk": 2,
     },
     "gen_nodes": {
-        "docs_pct_split": [0.2, 0.1, 0.1],
+        "docs_pct_split": [0.5, 0.25, 0.25],
     },
     "gen_qa_pairs": {
-        "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
