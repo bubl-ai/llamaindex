@@ -10,15 +10,24 @@ from llama_index.core.evaluation import (
     DatasetGenerator,
     EmbeddingQAFinetuneDataset,
 )
+from llama_index.llms.openai import OpenAI
+from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.memory import ChatMemoryBuffer
+from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.finetuning import generate_qa_embedding_pairs
 from llama_index.readers.wikipedia import WikipediaReader
 from typing import Any, Dict
 import pickle
 import random
 import os
+import nest_asyncio
+
+
+nest_asyncio.apply()
+Settings.llm = OpenAI(temperature=0.2, model="gpt-3.5-turbo")
+Settings.embed_model = OpenAIEmbedding(name="text-embedding-ada-002")
 
 
 class RAGBuildingBlocks:
@@ -32,6 +41,7 @@ class RAGBuildingBlocks:
         self.query_engine = {}
         self.retriever = {}
         self.chat_engine = {}
+        self.query_engine_tools = []
 
     def _ingest_data(self, c_id: str):
         component_cfg = self.components_cfg[c_id]
@@ -189,6 +199,9 @@ class RAGBuildingBlocks:
             self._get_index(c_id)
 
         self._gen_query_engine(c_id, component_cfg.get("gen_query_engine", {}))
+        self._gen_query_engine_tools(
+            c_id, component_cfg.get("gen_query_engine", {})
+        )
         self._gen_retriever(c_id, component_cfg.get("gen_retriever", {}))
         # self._gen_chat_engine(c_id, component_cfg.get("gen_chat_engine", {}))
 
@@ -248,6 +261,19 @@ class RAGBuildingBlocks:
         print(f"Generating Query Engine for {c_id}")
         self.query_engine[c_id] = self.index[c_id].as_query_engine(
             similarity_top_k=cfg.get("similarity_top_k", 3)
+        )
+
+    def _gen_query_engine_tools(self, c_id: str, cfg: Dict[str, Any]):
+        print(f"Generating Query Engine Tool for {c_id}")
+        self.query_engine_tools.append(
+            QueryEngineTool(
+                query_engine=self.query_engine[c_id],
+                metadata=ToolMetadata(
+                    name=c_id,
+                    description="Input is a user query to obtain information."
+                    + cfg.get("description"),
+                ),
+            )
         )
 
     def _gen_chat_engine(self, c_id: str, cfg: Dict[str, Any]):
