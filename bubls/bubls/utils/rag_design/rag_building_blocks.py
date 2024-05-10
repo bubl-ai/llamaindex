@@ -219,27 +219,43 @@ class RAGBuildingBlocks:
 
         # Index is the main output, check if exists
         index_data_path = os.path.join(
-            os.environ["PERSIST_DIR"], c_id, "index"
+            os.environ["PERSIST_DIR"], c_id, "indexes", "baseline"
         )
         if not os.path.exists(index_data_path):
             print(f"Generating engines for {c_id}")
-            self._gen_index(c_id, component_cfg.get("load_data", {}))
+            self.index[c_id] = self.gen_index(
+                c_id,
+                "baseline",
+                self.nodes[c_id]["train"],
+                component_cfg.get("gen_index", {}),
+            )
 
         else:
             print(f"Loading engines for {c_id}")
-            self._get_index(c_id)
+            self.index[c_id] = self.get_index(c_id)
 
-        self._gen_query_engine(c_id, component_cfg.get("gen_query_engine", {}))
-        self._gen_query_engine_tools(
-            c_id, component_cfg.get("gen_query_engine", {})
+        self.query_engine[c_id] = self.gen_query_engine(
+            c_id, self.index[c_id], component_cfg.get("gen_query_engine", {})
         )
-        self._gen_retriever(c_id, component_cfg.get("gen_retriever", {}))
-        # self._gen_chat_engine(c_id, component_cfg.get("gen_chat_engine", {}))
+        self.query_engine_tools.append(
+            self.gen_query_engine_tool(
+                c_id,
+                self.query_engine[c_id],
+                component_cfg.get("gen_query_engine", {}),
+            )
+        )
+        self.retriever[c_id] = self.gen_retriever(
+            c_id, self.index[c_id], component_cfg.get("gen_retriever", {})
+        )
+        # self.chat_engine[c_id] = self.gen_chat_engine(c_id, self.index[c_id], component_cfg.get("gen_chat_engine", {}))
 
-    def _gen_index(self, c_id: str, cfg: Dict[str, Any]):
+    @staticmethod
+    def gen_index(c_id: str, index_name: str, nodes, cfg: Dict[str, Any]):
         print(f"Generating Index for {c_id}")
-        persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "index")
-        os.makedirs(persist_dir, exist_ok=True)
+        persist_dir = os.path.join(
+            os.environ["PERSIST_DIR"], c_id, "indexes", index_name
+        )
+        os.makedirs(persist_dir)
 
         ## From documents
         # self.index[c] = VectorStoreIndex.from_documents(
@@ -267,47 +283,57 @@ class RAGBuildingBlocks:
         # )
 
         ## From nodes
-        self.index[c_id] = VectorStoreIndex(
-            self.nodes[c_id]["train"],
-        )
+        index = VectorStoreIndex(nodes)
 
         ## Persist index to avoid constructing it again
-        self.index[c_id].storage_context.persist(persist_dir)
+        index.storage_context.persist(persist_dir)
 
-    def _get_index(self, c_id: str):
-        print(f"Loading Index for {c_id}")
-        persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "index")
+        return index
+
+    @staticmethod
+    def get_index(c_id: str, index_name: str):
+        print(f"Loading Index for {c_id}, {index_name}")
+        persist_dir = os.path.join(
+            os.environ["PERSIST_DIR"], c_id, "indexes", index_name
+        )
         storage_context = StorageContext.from_defaults(persist_dir=persist_dir)
-        self.index[c_id] = load_index_from_storage(storage_context)
+        index = load_index_from_storage(storage_context)
+        return index
 
-    def _gen_retriever(self, c_id: str, cfg: Dict[str, Any]):
+    @staticmethod
+    def gen_retriever(c_id: str, index, cfg: Dict[str, Any] = {}):
         print(f"Generating Retriever for {c_id}")
-        self.retriever[c_id] = self.index[c_id].as_retriever(
+        retriever = index.as_retriever(
             similarity_top_k=cfg.get("similarity_top_k", 3),
             ## You can set here  parameters for vector store and alpha
             # https://docs.llamaindex.ai/en/stable/api_reference/retrievers/vector/
         )
+        return retriever
 
-    def _gen_query_engine(self, c_id: str, cfg: Dict[str, Any]):
+    @staticmethod
+    def gen_query_engine(c_id: str, index, cfg: Dict[str, Any] = {}):
         print(f"Generating Query Engine for {c_id}")
-        self.query_engine[c_id] = self.index[c_id].as_query_engine(
+        query_engine = index.as_query_engine(
             similarity_top_k=cfg.get("similarity_top_k", 3)
         )
+        return query_engine
 
-    def _gen_query_engine_tools(self, c_id: str, cfg: Dict[str, Any]):
+    @staticmethod
+    def gen_query_engine_tool(
+        c_id: str, query_engine, cfg: Dict[str, Any] = {}
+    ):
         print(f"Generating Query Engine Tool for {c_id}")
-        self.query_engine_tools.append(
-            QueryEngineTool(
-                query_engine=self.query_engine[c_id],
-                metadata=ToolMetadata(
-                    name=c_id,
-                    description="Input is a user query to obtain information."
-                    + cfg.get("description"),
-                ),
-            )
+        return QueryEngineTool(
+            query_engine=query_engine,
+            metadata=ToolMetadata(
+                name=c_id,
+                description="Input is a user query to obtain information."
+                + cfg.get("description"),
+            ),
         )
 
-    def _gen_chat_engine(self, c_id: str, cfg: Dict[str, Any]):
+    @staticmethod
+    def gen_chat_engine(c_id: str, index, cfg: Dict[str, Any] = {}):
         print(f"Generating Retriever for {c_id}")
         CHAT_SYSTEM_CONTENT = """
             Here are the relevant documents for the context:
@@ -319,7 +345,7 @@ class RAGBuildingBlocks:
         """
         memory = ChatMemoryBuffer.from_defaults(token_limit=3900)
 
-        self.chat_engine[c_id] = self.index[c_id].as_chat_engine(
+        chat_engine = index.as_chat_engine(
             similarity_top_k=cfg.get("similarity_top_k", 3),
             chat_mode="condense_plus_context",
             memory=memory,
@@ -327,6 +353,7 @@ class RAGBuildingBlocks:
             context_prompt=CHAT_SYSTEM_CONTENT,
             verbose=False,
         )
+        return chat_engine
 
     def execute(self):
         for c_id, component_cfg in self.components_cfg.items():
