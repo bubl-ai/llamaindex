@@ -37,6 +37,7 @@ lyft_10k = {
         "num_questions_per_chunk": 2,
     },
     "gen_nodes": {
+        "docs_pct_split": [0.2, 0.1, 0.1],
         "transformations": [
             SentenceSplitter(
                 chunk_size=2**10,
@@ -46,10 +47,9 @@ lyft_10k = {
             # QuestionsAnsweredExtractor(questions=1),
             # SummaryExtractor(summaries=["prev", "self"]),
             # KeywordExtractor(keywords=5),
-        ]
+        ],
     },
     "gen_qa_pairs": {
-        "nodes_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
@@ -87,9 +87,10 @@ papers_ridesharing = {
         "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 1,
     },
-    "gen_nodes": {},
+    "gen_nodes": {
+        "docs_pct_split": [0.2, 0.1, 0.1],
+    },
     "gen_qa_pairs": {
-        "nodes_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 1,
     },
     "gen_index": {},
@@ -121,9 +122,11 @@ wiki_public_companies = {
         "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
-    "gen_nodes": {},
+    "gen_nodes": {
+        "docs_pct_split": [0.2, 0.1, 0.1],
+    },
     "gen_qa_pairs": {
-        "nodes_pct_split": [0.2, 0.1, 0.1],
+        "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
