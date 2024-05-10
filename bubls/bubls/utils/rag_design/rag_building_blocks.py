@@ -103,35 +103,47 @@ class RAGBuildingBlocks:
         persist_dir = os.path.join(
             os.environ["PERSIST_DIR"], c_id, "llm_eval_data"
         )
-        data_path = os.path.join(persist_dir, f"llm_eval_data.pkl")
         os.makedirs(persist_dir, exist_ok=True)
-        print(f"Generating LLM Eval Data for {c_id}")
-        sample = int(
-            cfg.get("docs_pct_sample", 0.2) * len(self.documents[c_id])
+        self.llm_eval_data[c_id] = {}
+        docs_pct_split = cfg.get("docs_pct_split", [0.5, 0.3, 0.2])
+        if sum(docs_pct_split) > 1:
+            raise ValueError(
+                f" Sum of docs_pct_split elements can't be higher than 1"
+            )
+        docs_n_split = [
+            int(pct * len(self.documents[c_id])) for pct in docs_pct_split
+        ]
+        random_docs = random.sample(
+            self.documents[c_id], len(self.documents[c_id])
         )
-        sample = sample if sample > 0 else 1
-        sampled_docs = random.sample(self.documents[c_id], sample)
+        i = 0
+        for s, split in enumerate(["train", "val", "test"]):
+            print(f"Generating LLM Eval Data for {c_id}, {split}")
+            split_docs = random_docs[i : i + docs_n_split[s]]
+            i += docs_n_split[s]
+            data_generator = DatasetGenerator.from_documents(
+                split_docs,
+                num_questions_per_chunk=cfg.get("num_questions_per_chunk", 2),
+            )
 
-        data_generator = DatasetGenerator.from_documents(
-            sampled_docs,
-            num_questions_per_chunk=cfg.get("num_questions_per_chunk", 2),
-        )
+            self.llm_eval_data[c_id][
+                split
+            ] = data_generator.generate_questions_from_nodes()
 
-        self.llm_eval_data[c_id] = (
-            data_generator.generate_questions_from_nodes()
-        )
-
-        with open(data_path, "wb") as file:
-            pickle.dump(self.llm_eval_data[c_id], file)
+            data_path = os.path.join(persist_dir, f"llm_eval_data_{split}.pkl")
+            with open(data_path, "wb") as file:
+                pickle.dump(self.llm_eval_data[c_id][split], file)
 
     def _get_llm_eval_data(self, c_id: str):
+        self.llm_eval_data[c_id] = {}
         persist_dir = os.path.join(
             os.environ["PERSIST_DIR"], c_id, "llm_eval_data"
         )
-        data_path = os.path.join(persist_dir, f"llm_eval_data.pkl")
-        print(f"Loading LLM eval data for {c_id}")
-        with open(data_path, "rb") as file:
-            self.llm_eval_data[c_id] = pickle.load(file)
+        for split in ["train", "val", "test"]:
+            data_path = os.path.join(persist_dir, f"llm_eval_data_{split}.pkl")
+            print(f"Loading LLM eval data for {c_id}, {split}")
+            with open(data_path, "rb") as file:
+                self.llm_eval_data[c_id][split] = pickle.load(file)
 
     def _gen_nodes(self, c_id: str, cfg: Dict[str, Any]):
         print(f"Generating Nodes for {c_id}")
@@ -162,26 +174,40 @@ class RAGBuildingBlocks:
             self.nodes[c_id] = pickle.load(file)
 
     def _gen_qa_pairs(self, c_id: str, cfg: Dict[str, Any]):
-        print(f"Generating QA Pairs for {c_id}")
         persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "qa_pairs")
-        data_path = os.path.join(persist_dir, "qa_pairs.json")
         os.makedirs(persist_dir, exist_ok=True)
-        sample = int(cfg.get("nodes_pct_sample", 0.2) * len(self.nodes[c_id]))
-        sample = sample if sample > 0 else 1
-        sampled_nodes = random.sample(self.nodes[c_id], sample)
-
-        self.qa_pairs[c_id] = generate_qa_embedding_pairs(
-            llm=Settings.llm,
-            nodes=sampled_nodes,
-            num_questions_per_chunk=cfg.get("num_questions_per_chunk", 2),
-        )
-        self.qa_pairs[c_id].save_json(data_path)
+        self.qa_pairs[c_id] = {}
+        nodes_pct_split = cfg.get("nodes_pct_split", [0.5, 0.3, 0.2])
+        if sum(nodes_pct_split) > 1:
+            raise ValueError(
+                f" Sum of nodes_pct_split elements can't be higher than 1"
+            )
+        nodes_n_split = [
+            int(pct * len(self.nodes[c_id])) for pct in nodes_pct_split
+        ]
+        random_nodes = random.sample(self.nodes[c_id], len(self.nodes[c_id]))
+        i = 0
+        for s, split in enumerate(["train", "val", "test"]):
+            print(f"Generating QA Pairs for {c_id}, {split}")
+            split_nodes = random_nodes[i : i + nodes_n_split[s]]
+            i += nodes_n_split[s]
+            self.qa_pairs[c_id][split] = generate_qa_embedding_pairs(
+                llm=Settings.llm,
+                nodes=split_nodes,
+                num_questions_per_chunk=cfg.get("num_questions_per_chunk", 2),
+            )
+            data_path = os.path.join(persist_dir, f"qa_pairs_{split}.json")
+            self.qa_pairs[c_id][split].save_json(data_path)
 
     def get_qa_pairs(self, c_id: str):
-        print(f"Loading QA pairs for {c_id}")
+        self.qa_pairs[c_id] = {}
         persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "qa_pairs")
-        data_path = os.path.join(persist_dir, "qa_pairs.json")
-        self.qa_pairs[c_id] = EmbeddingQAFinetuneDataset.from_json(data_path)
+        for split in ["train", "val", "test"]:
+            print(f"Loading QA pairs for {c_id}, {split}")
+            data_path = os.path.join(persist_dir, f"qa_pairs_{split}.json")
+            self.qa_pairs[c_id][split] = EmbeddingQAFinetuneDataset.from_json(
+                data_path
+            )
 
     def _set_engines(self, c_id: str):
         component_cfg = self.components_cfg[c_id]

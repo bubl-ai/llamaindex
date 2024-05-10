@@ -33,7 +33,7 @@ lyft_10k = {
         # "file_extractor": {".pdf": LlamaParse(result_type="text")}
     },
     "gen_llm_eval_data": {
-        "docs_pct_sample": 0.1,
+        "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_nodes": {
@@ -49,7 +49,7 @@ lyft_10k = {
         ]
     },
     "gen_qa_pairs": {
-        "nodes_pct_sample": 0.3,
+        "nodes_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
@@ -84,12 +84,12 @@ papers_ridesharing = {
         "source": "local",
     },
     "gen_llm_eval_data": {
-        "docs_pct_sample": 0.2,
+        "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 1,
     },
     "gen_nodes": {},
     "gen_qa_pairs": {
-        "nodes_pct_sample": 0.2,
+        "nodes_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 1,
     },
     "gen_index": {},
@@ -118,12 +118,12 @@ wiki_public_companies = {
         ],
     },
     "gen_llm_eval_data": {
-        "docs_pct_sample": 0.5,
+        "docs_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_nodes": {},
     "gen_qa_pairs": {
-        "nodes_pct_sample": 0.5,
+        "nodes_pct_split": [0.2, 0.1, 0.1],
         "num_questions_per_chunk": 2,
     },
     "gen_index": {},
