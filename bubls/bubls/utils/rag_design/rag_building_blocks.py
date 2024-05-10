@@ -48,7 +48,7 @@ class RAGBuildingBlocks:
 
         # Nodes is the main output, check if exists
         nodes_data_path = os.path.join(
-            os.environ["PERSIST_DIR"], c_id, "nodes", "nodes.pkl"
+            os.environ["PERSIST_DIR"], c_id, "nodes"
         )
         if not os.path.exists(nodes_data_path):
             print(f"Generating data artifacts for {c_id}")
@@ -146,10 +146,9 @@ class RAGBuildingBlocks:
                 self.llm_eval_data[c_id][split] = pickle.load(file)
 
     def _gen_nodes(self, c_id: str, cfg: Dict[str, Any]):
-        print(f"Generating Nodes for {c_id}")
         persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "nodes")
-        data_path = os.path.join(persist_dir, "nodes.pkl")
         os.makedirs(persist_dir, exist_ok=True)
+        self.nodes[c_id] = {}
 
         ## Using node_parser
         # node_parser = SentenceSplitter(**cfg)
@@ -160,40 +159,46 @@ class RAGBuildingBlocks:
         ## Using transformation pipeline
         transformations = cfg.get("transformations", [SentenceSplitter()])
         pipeline = IngestionPipeline(transformations=transformations)
-        self.nodes[c_id] = pipeline.run(documents=self.documents[c_id])
 
-        with open(data_path, "wb") as file:
-            pickle.dump(self.nodes[c_id], file)
+        docs_pct_split = cfg.get("docs_pct_split", [0.5, 0.3, 0.2])
+        if sum(docs_pct_split) > 1:
+            raise ValueError(
+                f" Sum of docs_pct_split elements can't be higher than 1"
+            )
+        docs_n_split = [
+            int(pct * len(self.documents[c_id])) for pct in docs_pct_split
+        ]
+        random_docs = random.sample(
+            self.documents[c_id], len(self.documents[c_id])
+        )
+        i = 0
+        for s, split in enumerate(["train", "val", "test"]):
+            print(f"Generating Nodes for {c_id}, {split}")
+            split_docs = random_docs[i : i + docs_n_split[s]]
+            self.nodes[c_id][split] = pipeline.run(documents=split_docs)
+            i += docs_n_split[s]
+            data_path = os.path.join(persist_dir, f"nodes_{split}.pkl")
+            with open(data_path, "wb") as file:
+                pickle.dump(self.nodes[c_id][split], file)
 
     def _get_nodes(self, c_id: str):
-        print(f"Loading Nodes for {c_id}")
+        self.nodes[c_id] = {}
         persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "nodes")
-        data_path = os.path.join(persist_dir, "nodes.pkl")
-        print(f"Loading nodes {c_id}")
-        with open(data_path, "rb") as file:
-            self.nodes[c_id] = pickle.load(file)
+        for split in ["train", "val", "test"]:
+            print(f"Generating Nodes for {c_id}, {split}")
+            data_path = os.path.join(persist_dir, f"nodes_{split}.pkl")
+            with open(data_path, "rb") as file:
+                self.nodes[c_id][split] = pickle.load(file)
 
     def _gen_qa_pairs(self, c_id: str, cfg: Dict[str, Any]):
         persist_dir = os.path.join(os.environ["PERSIST_DIR"], c_id, "qa_pairs")
         os.makedirs(persist_dir, exist_ok=True)
         self.qa_pairs[c_id] = {}
-        nodes_pct_split = cfg.get("nodes_pct_split", [0.5, 0.3, 0.2])
-        if sum(nodes_pct_split) > 1:
-            raise ValueError(
-                f" Sum of nodes_pct_split elements can't be higher than 1"
-            )
-        nodes_n_split = [
-            int(pct * len(self.nodes[c_id])) for pct in nodes_pct_split
-        ]
-        random_nodes = random.sample(self.nodes[c_id], len(self.nodes[c_id]))
-        i = 0
-        for s, split in enumerate(["train", "val", "test"]):
+        for split in ["train", "val", "test"]:
             print(f"Generating QA Pairs for {c_id}, {split}")
-            split_nodes = random_nodes[i : i + nodes_n_split[s]]
-            i += nodes_n_split[s]
             self.qa_pairs[c_id][split] = generate_qa_embedding_pairs(
                 llm=Settings.llm,
-                nodes=split_nodes,
+                nodes=self.nodes[c_id][split],
                 num_questions_per_chunk=cfg.get("num_questions_per_chunk", 2),
             )
             data_path = os.path.join(persist_dir, f"qa_pairs_{split}.json")
@@ -263,7 +268,7 @@ class RAGBuildingBlocks:
 
         ## From nodes
         self.index[c_id] = VectorStoreIndex(
-            self.nodes[c_id],
+            self.nodes[c_id]["train"],
         )
 
         ## Persist index to avoid constructing it again
