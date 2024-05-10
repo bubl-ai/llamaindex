@@ -5,26 +5,24 @@
 from llama_index.core.tools.tool_spec.base import BaseToolSpec
 from llama_index.llms.openai import OpenAI
 from llama_index.core.readers.base import Document
-from newsapi.newsapi_client import NewsApiClient
+from newsapi import NewsApiClient
 import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import date, datetime
 from typing import Optional
+import os
 
 
 LLM = OpenAI("gpt-4")
+NEWS_API_CLIENT = NewsApiClient(os.environ["NEWS_API_KEY"])
 
 
 class FinanceTools(BaseToolSpec):
     """
     A class for various financial tools, leveraging external APIs to
         fetch stock data and news articles.
-
-    Attributes:
-        news_api_client (NewsApiClient): An instance of the NewsApiClient for
-            fetching news data.
     """
 
     spec_functions = [
@@ -33,14 +31,6 @@ class FinanceTools(BaseToolSpec):
         "search_news",
         "summarize_news",
     ]
-
-    def __init__(self, news_api_client: NewsApiClient):
-        """Initializes the FinanceTools with a specific NewsApiClient.
-
-        Args:
-            news_api_client (NewsApiClient): A client to interact with News API.
-        """
-        self.news_api_client = news_api_client
 
     def stock_prices(
         self, ticker: str, period_days: Optional[int] = 1
@@ -105,7 +95,7 @@ class FinanceTools(BaseToolSpec):
         Returns:
             str: Concatenated string of news titles, descriptions, and partial contents.
         """
-        articles = self.news_api_client.get_everything(
+        articles = NEWS_API_CLIENT.get_everything(
             q=ticker,
             from_param=datetime.strptime(from_date, "%Y-%m-%d").isoformat(),
             to=datetime.strptime(to_date, "%Y-%m-%d").isoformat(),
