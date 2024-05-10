@@ -54,14 +54,15 @@ lyft_10k = {
     },
     "gen_index": {},
     # "gen_retriever": {},
-    # "gen_query_engine": {
-    #     "similarity_top_k": 1,
-    #     "node_postprocessors": [
-    #         TimeWeightedPostprocessor(
-    #             time_decay=0.5, time_access_refresh=False, top_k=1
-    #         )
-    #     ],
-    # },
+    "gen_query_engine": {
+        "description": "Provides information about Lyft financials for year 2021.",
+        "similarity_top_k": 3,
+        #     "node_postprocessors": [
+        #         TimeWeightedPostprocessor(
+        #             time_decay=0.5, time_access_refresh=False, top_k=1
+        #         )
+        #     ],
+    },
 }
 
 papers_ridesharing = {
@@ -93,7 +94,14 @@ papers_ridesharing = {
     },
     "gen_index": {},
     # "gen_retriever": {},
-    # "gen_query_engine": {"similarity_top_k": 1},
+    "gen_query_engine": {
+        "description": """
+            Provides research information about rideshare companies such as
+            Uber and Lyft. Research covers pricing collusions, platforms
+            and carbon reduction.
+        """,
+        "similarity_top_k": 3,
+    },
 }
 
 wiki_public_companies = {
@@ -120,5 +128,11 @@ wiki_public_companies = {
     },
     "gen_index": {},
     # "gen_retriever": {},
-    # "gen_query_engine": {"similarity_top_k": 1},
+    "gen_query_engine": {
+        "description": """
+            Provides general information of the next companies: 
+            Lyft, Uberm Airbnb, Microsoft, Apple, Nvidia, and Amazon
+        """,
+        "similarity_top_k": 3,
+    },
 }
