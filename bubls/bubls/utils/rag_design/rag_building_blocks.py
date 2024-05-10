@@ -232,7 +232,7 @@ class RAGBuildingBlocks:
 
         else:
             print(f"Loading engines for {c_id}")
-            self.index[c_id] = self.get_index(c_id)
+            self.index[c_id] = self.get_index(c_id, "baseline")
 
         self.query_engine[c_id] = self.gen_query_engine(
             c_id, self.index[c_id], component_cfg.get("gen_query_engine", {})
@@ -250,7 +250,7 @@ class RAGBuildingBlocks:
         # self.chat_engine[c_id] = self.gen_chat_engine(c_id, self.index[c_id], component_cfg.get("gen_chat_engine", {}))
 
     @staticmethod
-    def gen_index(c_id: str, index_name: str, nodes, cfg: Dict[str, Any]):
+    def gen_index(c_id: str, index_name: str, nodes, cfg: Dict[str, Any] = {}):
         print(f"Generating Index for {c_id}")
         persist_dir = os.path.join(
             os.environ["PERSIST_DIR"], c_id, "indexes", index_name
@@ -283,7 +283,7 @@ class RAGBuildingBlocks:
         # )
 
         ## From nodes
-        index = VectorStoreIndex(nodes)
+        index = VectorStoreIndex(nodes, **cfg)
 
         ## Persist index to avoid constructing it again
         index.storage_context.persist(persist_dir)
