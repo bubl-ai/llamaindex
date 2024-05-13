@@ -17,6 +17,7 @@ RUN pip install \
     llama-index \
     llama-parse \
     llama-index-finetuning \
+    llama-index-embeddings-huggingface \
     sentence-transformers \
     newsapi-python \
     yfinance
