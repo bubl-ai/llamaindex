@@ -19,10 +19,12 @@ from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.finetuning import generate_qa_embedding_pairs
 from llama_index.readers.wikipedia import WikipediaReader
 from typing import Any, Dict
+import pandas as pd
 import pickle
 import random
 import os
 import nest_asyncio
+from tqdm.notebook import tqdm
 
 
 nest_asyncio.apply()
@@ -42,6 +44,7 @@ class RAGBuildingBlocks:
         self.retriever = {}
         self.chat_engine = {}
         self.query_engine_tools = []
+        self.eval_data = {}
 
     def _ingest_data(self, c_id: str):
         component_cfg = self.components_cfg[c_id]
@@ -226,7 +229,9 @@ class RAGBuildingBlocks:
             self.index[c_id] = self.gen_index(
                 c_id,
                 "baseline",
-                self.nodes[c_id]["train"],
+                self.nodes[c_id]["train"]
+                + self.nodes[c_id]["val"]
+                + +self.nodes[c_id]["test"],
                 component_cfg.get("gen_index", {}),
             )
 
@@ -244,10 +249,6 @@ class RAGBuildingBlocks:
                 component_cfg.get("gen_query_engine", {}),
             )
         )
-        self.retriever[c_id] = self.gen_retriever(
-            c_id, self.index[c_id], component_cfg.get("gen_retriever", {})
-        )
-        # self.chat_engine[c_id] = self.gen_chat_engine(c_id, self.index[c_id], component_cfg.get("gen_chat_engine", {}))
 
     @staticmethod
     def gen_index(c_id: str, index_name: str, nodes, cfg: Dict[str, Any] = {}):
@@ -355,7 +356,71 @@ class RAGBuildingBlocks:
         )
         return chat_engine
 
+    def _eval_data(self, c_id: str):
+        # Index is the main output, check if exists
+        persist_dir = os.path.join(
+            os.environ["PERSIST_DIR"], c_id, "eval_data"
+        )
+        self.eval_data[c_id] = {}
+        if not os.path.exists(persist_dir):
+            os.makedirs(persist_dir, exist_ok=True)
+            corpus_all = {
+                dd.id_: dd.text
+                for dd in self.index[c_id].docstore.docs.values()
+            }
+            for split in ["train", "val", "test"]:
+                print(f"Generating eval data for {c_id}, {split}")
+                self.eval_data[c_id][split] = self._gen_eval_data(
+                    self.query_engine[c_id],
+                    self.qa_pairs[c_id][split],
+                    corpus_all,
+                )
+                data_path = os.path.join(persist_dir, f"eval_data_{split}.pkl")
+                self.eval_data[c_id][split].to_pickle(data_path)
+
+        else:
+            for split in ["train", "val", "test"]:
+                print(f"Loading eval data for {c_id}, {split}")
+                self.eval_data[c_id][split] = pd.read_pickle(
+                    persist_dir, f"eval_data_{split}.pkl"
+                )
+
+    @staticmethod
+    def _gen_eval_data(query_engine, qa_pairs, corpus_all):
+        df_eval_dict = {}
+        for q_id, query in tqdm(qa_pairs.queries.items()):
+            ground_truth_ids = qa_pairs.relevant_docs[q_id]
+            ground_truth_text = "\n".join(
+                [qa_pairs.corpus[n_id] for n_id in ground_truth_ids[:1]]
+            )
+
+            response = query_engine.query(query)
+            context_ids = [sn.id_ for sn in response.source_nodes]
+            context_texts = [corpus_all[n_id] for n_id in context_ids]
+            df_eval_dict[q_id] = [
+                query,
+                ground_truth_ids,
+                ground_truth_text,
+                context_ids,
+                context_texts,
+                str(response),
+            ]
+
+        return pd.DataFrame.from_dict(
+            df_eval_dict,
+            orient="index",
+            columns=[
+                "query",
+                "reference_ids",
+                "reference",
+                "contexts_ids",
+                "contexts",
+                "response",
+            ],
+        )
+
     def execute(self):
         for c_id, component_cfg in self.components_cfg.items():
             self._ingest_data(c_id)
             self._set_engines(c_id)
+            self._eval_data(c_id)
