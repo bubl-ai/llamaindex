@@ -364,16 +364,13 @@ class RAGBuildingBlocks:
         self.eval_data[c_id] = {}
         if not os.path.exists(persist_dir):
             os.makedirs(persist_dir, exist_ok=True)
-            corpus_all = {
-                dd.id_: dd.text
-                for dd in self.index[c_id].docstore.docs.values()
-            }
+            corpus = self.get_corpus(self.index[c_id])
             for split in ["train", "val", "test"]:
                 print(f"Generating eval data for {c_id}, {split}")
-                self.eval_data[c_id][split] = self._gen_eval_data(
+                self.eval_data[c_id][split] = self.gen_eval_data(
                     self.query_engine[c_id],
                     self.qa_pairs[c_id][split],
-                    corpus_all,
+                    corpus,
                 )
                 data_path = os.path.join(persist_dir, f"eval_data_{split}.pkl")
                 self.eval_data[c_id][split].to_pickle(data_path)
@@ -385,15 +382,19 @@ class RAGBuildingBlocks:
                 self.eval_data[c_id][split] = pd.read_pickle(data_path)
 
     @staticmethod
-    def _gen_eval_data(query_engine, qa_pairs, corpus_all):
+    def get_corpus_from_index(index):
+        return {dd.id_: dd.text for dd in index.docstore.docs.values()}
+
+    @staticmethod
+    def gen_eval_data(query_engine, qa_pairs, corpus):
         df_eval_dict = {}
         for q_id, query in tqdm(qa_pairs.queries.items()):
             reference_id = qa_pairs.relevant_docs[q_id][0]
-            reference = qa_pairs.corpus[reference_id]  # can use corpus_all too
+            reference = qa_pairs.corpus[reference_id]  # can use corpus too
 
             response = query_engine.query(query)
             contexts_ids = [sn.id_ for sn in response.source_nodes]
-            contexts = [corpus_all[n_id] for n_id in contexts_ids]
+            contexts = [corpus[n_id] for n_id in contexts_ids]
             df_eval_dict[q_id] = [
                 query,
                 reference_id,
