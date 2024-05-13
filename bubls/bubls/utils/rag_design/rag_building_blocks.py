@@ -231,7 +231,7 @@ class RAGBuildingBlocks:
                 "baseline",
                 self.nodes[c_id]["train"]
                 + self.nodes[c_id]["val"]
-                + +self.nodes[c_id]["test"],
+                + self.nodes[c_id]["test"],
                 component_cfg.get("gen_index", {}),
             )
 
@@ -381,28 +381,25 @@ class RAGBuildingBlocks:
         else:
             for split in ["train", "val", "test"]:
                 print(f"Loading eval data for {c_id}, {split}")
-                self.eval_data[c_id][split] = pd.read_pickle(
-                    persist_dir, f"eval_data_{split}.pkl"
-                )
+                data_path = os.path.join(persist_dir, f"eval_data_{split}.pkl")
+                self.eval_data[c_id][split] = pd.read_pickle(data_path)
 
     @staticmethod
     def _gen_eval_data(query_engine, qa_pairs, corpus_all):
         df_eval_dict = {}
         for q_id, query in tqdm(qa_pairs.queries.items()):
-            ground_truth_ids = qa_pairs.relevant_docs[q_id]
-            ground_truth_text = "\n".join(
-                [qa_pairs.corpus[n_id] for n_id in ground_truth_ids[:1]]
-            )
+            reference_id = qa_pairs.relevant_docs[q_id][0]
+            reference = qa_pairs.corpus[reference_id]  # can use corpus_all too
 
             response = query_engine.query(query)
-            context_ids = [sn.id_ for sn in response.source_nodes]
-            context_texts = [corpus_all[n_id] for n_id in context_ids]
+            contexts_ids = [sn.id_ for sn in response.source_nodes]
+            contexts = [corpus_all[n_id] for n_id in contexts_ids]
             df_eval_dict[q_id] = [
                 query,
-                ground_truth_ids,
-                ground_truth_text,
-                context_ids,
-                context_texts,
+                reference_id,
+                reference,
+                contexts_ids,
+                contexts,
                 str(response),
             ]
 
@@ -411,7 +408,7 @@ class RAGBuildingBlocks:
             orient="index",
             columns=[
                 "query",
-                "reference_ids",
+                "reference_id",
                 "reference",
                 "contexts_ids",
                 "contexts",
@@ -420,7 +417,7 @@ class RAGBuildingBlocks:
         )
 
     def execute(self):
-        for c_id, component_cfg in self.components_cfg.items():
+        for c_id, _ in self.components_cfg.items():
             self._ingest_data(c_id)
             self._set_engines(c_id)
             self._eval_data(c_id)
