@@ -142,8 +142,13 @@ def read_day_schedules(day: str) -> List:
     try:
         with open(file_path, "r") as file:
             all_schedules = json.load(file)
-        day_schedules = all_schedules.get(day, [])
-        return format_datetimes(day_schedules)
+        schedules = all_schedules.get(day, [])
+
+        for i, schedule in enumerate(schedules):
+            schedules[i]["start_time"] = f'{day}T{schedule["start_time"]}:00'
+            schedules[i]["end_time"] = f'{day}T{schedule["end_time"]}:00'
+
+        return format_datetimes(schedules)
     except FileNotFoundError:
         raise FileNotFoundError("The schedule file could not be found.")
     except json.JSONDecodeError:
@@ -211,6 +216,8 @@ def create_schedule() -> str:
 def update_schedule(id: str, property: str, value: str) -> str:
     """Updates a property of a schedule with a given value.
 
+    Useful when more information is needed to confirm a schedule.
+    Properties that can be updated ["day", "start_time", "end_time", "passengers"]
     Args:
         id (str): The ID of the schedule to update.
         property (str): The property to update.
