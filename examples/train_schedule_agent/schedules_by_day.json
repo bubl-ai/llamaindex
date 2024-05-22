@@ -1,0 +1,186 @@
+{
+    "2024-01-01": [
+        {
+            "id": "alrt",
+            "start_time": "16:00",
+            "end_time": "18:00",
+            "passengers": 50
+        },
+        {
+            "id": "vjku",
+            "start_time": "17:00",
+            "end_time": "19:00",
+            "passengers": 530
+        },
+        {
+            "id": "poeq",
+            "start_time": "5:00",
+            "end_time": "7:00",
+            "passengers": 200
+        },
+        {
+            "id": "lwrm",
+            "start_time": "10:00",
+            "end_time": "11:00",
+            "passengers": 300
+        },
+        {
+            "id": "lorw",
+            "start_time": "10:30",
+            "end_time": "11:30",
+            "passengers": 200
+        },
+        {
+            "id": "aqwc",
+            "start_time": "12:00",
+            "end_time": "14:00",
+            "passengers": 100
+        },
+        {
+            "id": "dtgv",
+            "start_time": "13:00",
+            "end_time": "15:00",
+            "passengers": 30
+        },
+        {
+            "id": "imex",
+            "start_time": "14:00",
+            "end_time": "16:00",
+            "passengers": 100
+        },
+        {
+            "id": "lina",
+            "start_time": "00:00",
+            "end_time": "6:00",
+            "passengers": 100
+        },
+        {
+            "id": "lirc",
+            "start_time": "15:00",
+            "end_time": "17:00",
+            "passengers": 20
+        },
+        {
+            "id": "ghdl",
+            "start_time": "8:00",
+            "end_time": "10:00",
+            "passengers": 1000
+        },
+        {
+            "id": "ljra",
+            "start_time": "9:30",
+            "end_time": "10:30",
+            "passengers": 450
+        },
+        {
+            "id": "qscm",
+            "start_time": "18:00",
+            "end_time": "20:00",
+            "passengers": 1000
+        },
+        {
+            "id": "zsyj",
+            "start_time": "19:00",
+            "end_time": "21:00",
+            "passengers": 110
+        },
+        {
+            "id": "jdhf",
+            "start_time": "20:00",
+            "end_time": "22:00",
+            "passengers": 40
+        }
+    ],
+    "2024-01-02": [
+        {
+            "id": "plmu",
+            "start_time": "00:30",
+            "end_time": "05:30",
+            "passengers": 120
+        },
+        {
+            "id": "pjme",
+            "start_time": "04:30",
+            "end_time": "06:30",
+            "passengers": 220
+        },
+        {
+            "id": "qynl",
+            "start_time": "07:30",
+            "end_time": "09:30",
+            "passengers": 950
+        },
+        {
+            "id": "uakp",
+            "start_time": "09:00",
+            "end_time": "10:00",
+            "passengers": 400
+        },
+        {
+            "id": "alie",
+            "start_time": "09:45",
+            "end_time": "10:45",
+            "passengers": 310
+        },
+        {
+            "id": "yfbn",
+            "start_time": "10:15",
+            "end_time": "11:15",
+            "passengers": 250
+        },
+        {
+            "id": "vhqd",
+            "start_time": "11:30",
+            "end_time": "13:30",
+            "passengers": 120
+        },
+        {
+            "id": "vtyu",
+            "start_time": "12:30",
+            "end_time": "14:30",
+            "passengers": 50
+        },
+        {
+            "id": "xjwo",
+            "start_time": "13:30",
+            "end_time": "15:30",
+            "passengers": 130
+        },
+        {
+            "id": "dwwl",
+            "start_time": "14:30",
+            "end_time": "16:30",
+            "passengers": 70
+        },
+        {
+            "id": "qkap",
+            "start_time": "15:30",
+            "end_time": "17:30",
+            "passengers": 180
+        },
+        {
+            "id": "plkl",
+            "start_time": "16:30",
+            "end_time": "18:30",
+            "passengers": 500
+        },
+        {
+            "id": "qqpl",
+            "start_time": "17:30",
+            "end_time": "19:30",
+            "passengers": 1050
+        },
+        {
+            "id": "ajuu",
+            "start_time": "18:30",
+            "end_time": "20:30",
+            "passengers": 90
+        },
+        {
+            "id": "aluq",
+            "start_time": "19:30",
+            "end_time": "21:30",
+            "passengers": 60
+        }
+    ]
+}
